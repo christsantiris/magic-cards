@@ -4,10 +4,27 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"log"
+	"encoding/json"
 )
+
+type Card struct {
+	ID int `json:"id"`
+	Name string `json:"name"`
+	Color string `json:"color"`
+	StandardLegal bool `json:"standard_legal"`
+	Type string `json:"type"`
+	Rarity string `json:"rarity"`
+	Set string `json:"set"`
+	CastingCost int `json:"casting_cost"`
+}
+
+var cards []Card
 
 func main() {
 	router := mux.NewRouter()
+
+	cards = append(cards, Card{ID: 1, Name: "Bonecrusher Giant", Color: "Red", Set: "Throne of Eldraine", Type: "Creature", Rarity: "Rare", StandardLegal: true, CastingCost: 3},
+		Card{ID: 2, Name: "Embercleave", Color: "Red", Set: "Throne of Eldraine", Type: "Artifact", Rarity: "Mythic Rare", StandardLegal: true, CastingCost: 6})
 
 	router.HandleFunc("/cards", getCards).Methods("GET")
 	router.HandleFunc("/cards/{id}", getCard).Methods("GET")
@@ -19,7 +36,7 @@ func main() {
 }
 
 func getCards(w http.ResponseWriter, r *http.Request) {
-	log.Println("Get Cards")
+	json.NewEncoder(w).Encode(cards)
 }
 func getCard(w http.ResponseWriter, r *http.Request) {
 	log.Println("Get Card")
