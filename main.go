@@ -7,6 +7,10 @@ import (
 	"encoding/json"
 	"strconv"
 	"fmt"
+	"os"
+	"database/sql"
+	"github.com/lib/pq"
+	"github.com/subosito/gotenv"
 )
 
 type Card struct {
@@ -21,8 +25,29 @@ type Card struct {
 }
 
 var cards []Card
+var db *sql.DB
+
+func init() {
+	gotenv.Load()
+}
+
+func logFatal(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func main() {
+
+	pgUrl, err := pq.ParseURL(os.Getenv("ELEPHANTSQL_URL"))
+	logFatal(err)
+
+	db, err = sql.Open("postgres", pgUrl)
+	logFatal(err)
+
+	err = db.Ping()
+	logFatal(err)
+
 	router := mux.NewRouter()
 
 	cards = append(cards, Card{ID: 1, Name: "Bonecrusher Giant", Color: "Red", Set: "Throne of Eldraine", Type: "Creature", Rarity: "Rare", StandardLegal: true, CastingCost: 3},
@@ -39,6 +64,21 @@ func main() {
 }
 
 func getCards(w http.ResponseWriter, r *http.Request) {
+	var card Card
+	cards = []Card{}
+
+	rows, err := db.Query("select * from cards")
+	logFatal(err)
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&card.ID, &card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost)
+		logFatal(err)
+
+		cards = append(cards, card)
+	}
+
 	json.NewEncoder(w).Encode(cards)
 }
 func getCard(w http.ResponseWriter, r *http.Request) {
