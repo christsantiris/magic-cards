@@ -62,7 +62,16 @@ func addCard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 func updateCard(w http.ResponseWriter, r *http.Request) {
-	log.Println("Update Card")
+	var card Card
+
+	json.NewDecoder(r.Body).Decode(&card)
+
+	for i, item := range cards {
+		if item.ID == card.ID {
+			cards[i] = card
+		}
+	}
+	json.NewEncoder(w).Encode(cards)
 }
 func removeCard(w http.ResponseWriter, r *http.Request) {
 	log.Println("Remove Card")
