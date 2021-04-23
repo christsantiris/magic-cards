@@ -82,15 +82,15 @@ func getCards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 func getCard(w http.ResponseWriter, r *http.Request) {
+	var card Card
 	params := mux.Vars(r)
 
-	i, _ := strconv.Atoi(params["id"])
+	row := db.QueryRow("select * from cards where id=$1", params["id"])
 
-	for _, card := range cards {
-		if card.ID == i {
-			json.NewEncoder(w).Encode(&card)
-		}
-	}
+	err := row.Scan(&card.ID, &card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost)
+	logFatal(err)
+
+	json.NewEncoder(w).Encode(card)
 }
 func addCard(w http.ResponseWriter, r *http.Request) {
 	var card Card
