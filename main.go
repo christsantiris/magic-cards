@@ -74,5 +74,14 @@ func updateCard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 func removeCard(w http.ResponseWriter, r *http.Request) {
-	log.Println("Remove Card")
+	params := mux.Vars(r)
+	id, _ := strconv.Atoi(params["id"])
+
+	for i, item := range cards {
+		if item.ID == id {
+			cards = append(cards[:i], cards[i+1:]...)
+		}
+	}
+
+	json.NewEncoder(w).Encode(cards)
 }
