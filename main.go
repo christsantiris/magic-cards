@@ -94,12 +94,15 @@ func getCard(w http.ResponseWriter, r *http.Request) {
 }
 func addCard(w http.ResponseWriter, r *http.Request) {
 	var card Card
+	var cardID int
 
 	json.NewDecoder(r.Body).Decode(&card)
 
-	cards = append(cards, card)
+	err := db.QueryRow("insert into cards (name, color, standard_legal, type, rarity, set, casting_cost) values($1, $2, $3, $4, $5, $6, $7) RETURNING id;", 
+		card.Name, card.Color, card.StandardLegal, card.Type, card.Rarity, card.Set, card.CastingCost).Scan(&cardID)
+	logFatal(err)
 
-	json.NewEncoder(w).Encode(cards)
+	json.NewEncoder(w).Encode(cardID)
 }
 func updateCard(w http.ResponseWriter, r *http.Request) {
 	var card Card
