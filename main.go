@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"log"
 	"encoding/json"
+	"strconv"
+	"fmt"
 )
 
 type Card struct {
@@ -32,6 +34,7 @@ func main() {
 	router.HandleFunc("/cards", updateCard).Methods("PUT")
 	router.HandleFunc("/cards/{id}", removeCard).Methods("DELETE")
 
+	fmt.Println("The App is running on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
@@ -39,7 +42,15 @@ func getCards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 func getCard(w http.ResponseWriter, r *http.Request) {
-	log.Println("Get Card")
+	params := mux.Vars(r)
+
+	i, _ := strconv.Atoi(params["id"])
+
+	for _, card := range cards {
+		if card.ID == i {
+			json.NewEncoder(w).Encode(&card)
+		}
+	}
 }
 func addCard(w http.ResponseWriter, r *http.Request) {
 	log.Println("Add Card")
