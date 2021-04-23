@@ -53,7 +53,13 @@ func getCard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func addCard(w http.ResponseWriter, r *http.Request) {
-	log.Println("Add Card")
+	var card Card
+
+	json.NewDecoder(r.Body).Decode(&card)
+
+	cards = append(cards, card)
+
+	json.NewEncoder(w).Encode(cards)
 }
 func updateCard(w http.ResponseWriter, r *http.Request) {
 	log.Println("Update Card")
