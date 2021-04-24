@@ -2,6 +2,11 @@
 
 ## To set up the DB in Elephant SQL (Postgres): 
 
-`create table cards (id serial, name varchar, color varchar, standard_legal boolean, type varchar, rarity varchar, set varchar, casting_cost int)`
-`insert into cards (name, color, standard_legal, type, rarity, set, casting_cost) values ('Goldspan Dragon', 'Red', true, 'Creature', 'Mythic Rare', 'Kaldheim', 5)`
-`SELECT * FROM cards` 
+### `create table cards (id serial, name varchar, color varchar, standard_legal boolean, type varchar, rarity varchar, set varchar, casting_cost int)`
+### `insert into cards (name, color, standard_legal, type, rarity, set, casting_cost) values ('Goldspan Dragon', 'Red', true, 'Creature', 'Mythic Rare', 'Kaldheim', 5)`
+### `SELECT * FROM cards` 
+
+## To run the application in debug mode: 
+### `go get github.com/derekparker/delve/cmd/dlv`
+### then hit the play button in vs code
+

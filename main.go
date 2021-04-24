@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"log"
 	"encoding/json"
-	"strconv"
 	"fmt"
 	"os"
 	"database/sql"
@@ -115,13 +114,12 @@ func updateCard(w http.ResponseWriter, r *http.Request) {
 }
 func removeCard(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
 
-	for i, item := range cards {
-		if item.ID == id {
-			cards = append(cards[:i], cards[i+1:]...)
-		}
-	}
+	result, err := db.Exec("delete from cards where id = $1", params["id"])
+	logFatal(err)
 
-	json.NewEncoder(w).Encode(cards)
+	rowsDeleted, err := result.RowsAffected()
+	logFatal(err)
+
+	json.NewEncoder(w).Encode(rowsDeleted)
 }
