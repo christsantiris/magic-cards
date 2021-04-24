@@ -103,15 +103,15 @@ func addCard(w http.ResponseWriter, r *http.Request) {
 }
 func updateCard(w http.ResponseWriter, r *http.Request) {
 	var card Card
-
 	json.NewDecoder(r.Body).Decode(&card)
 
-	for i, item := range cards {
-		if item.ID == card.ID {
-			cards[i] = card
-		}
-	}
-	json.NewEncoder(w).Encode(cards)
+	result, err := db.Exec("update cards set name=$1, color=$2, standard_legal=$3, type=$4, rarity=$5, set=$6, casting_cost=$7 where id=$8 RETURNING id", 
+		&card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost, &card.ID)
+
+	rowsUpdated, err := result.RowsAffected()
+	logFatal(err)
+
+	json.NewEncoder(w).Encode(rowsUpdated)
 }
 func removeCard(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
