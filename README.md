@@ -14,3 +14,6 @@
 ### `go mod init <module name> i.e github.com/christsantiris/magic-cards`
 ### `go mod tidy`
 
+## To build and run the project
+### `go build && ./magic-cards`
+
