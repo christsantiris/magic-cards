@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"github.com/christsantiris/magic-cards/models"
+	"github.com/christsantiris/magic-cards/repository/card"
+	"github.com/christsantiris/magic-cards/utils"
 	"net/http"
 	"encoding/json"
 	"log"
 	"database/sql"
 	"github.com/gorilla/mux"
+	"strconv"
 )
 
 type Controller struct {}
@@ -22,35 +25,51 @@ func logFatal(err error) {
 func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		var card models.Card
+		var error models.Error
+
 		cards = []models.Card{}
+		cardRepo := cardRepository.CardRepository{}
+		cards, err := cardRepo.GetCards(db, card, cards)
 
-		rows, err := db.Query("select * from cards")
-		logFatal(err)
-
-		defer rows.Close()
-
-		for rows.Next() {
-			err := rows.Scan(&card.ID, &card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost)
-			logFatal(err)
-
-			cards = append(cards, card)
+		if err != nil {
+			error.Message = "Server error"
+			utils.SendError(w, http.StatusInternalServerError, error)
+			return
 		}
 
-		json.NewEncoder(w).Encode(cards)
+		w.Header().Set("Content-Type", "application/json")
+		utils.SendSuccess(w, cards)
 	}
 }
 
 func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		var card models.Card
+		var error models.Error
+
 		params := mux.Vars(r)
-	
-		row := db.QueryRow("select * from cards where id=$1", params["id"])
-	
-		err := row.Scan(&card.ID, &card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost)
-		logFatal(err)
-	
-		json.NewEncoder(w).Encode(card)
+
+		cards = []models.Card{}
+		cardRepo := cardRepository.CardRepository{}
+
+		id, _ := strconv.Atoi(params["id"])
+
+		card, err := cardRepo.GetCard(db, card, id)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				error.Message = "Not Found"
+				utils.SendError(w, http.StatusNotFound, error)
+				return
+			} else {
+				error.Message = "Server error"
+				utils.SendError(w, http.StatusInternalServerError, error)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		utils.SendSuccess(w, card)
 	}
 }
 
@@ -58,42 +77,79 @@ func (c Controller) AddCard(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var cardID int
-	
+		var error models.Error
+
 		json.NewDecoder(r.Body).Decode(&card)
-	
-		err := db.QueryRow("insert into cards (name, color, standard_legal, type, rarity, set, casting_cost) values($1, $2, $3, $4, $5, $6, $7) RETURNING id;", 
-			card.Name, card.Color, card.StandardLegal, card.Type, card.Rarity, card.Set, card.CastingCost).Scan(&cardID)
-		logFatal(err)
-	
-		json.NewEncoder(w).Encode(cardID)
+
+		if card.Name == "" {
+			error.Message = "Card name is required."
+			utils.SendError(w, http.StatusBadRequest, error) //400
+			return
+		}
+
+		cardRepo := cardRepository.CardRepository{}
+		cardID, err := cardRepo.AddCard(db, card)
+
+		if err != nil {
+			error.Message = "Server error"
+			utils.SendError(w, http.StatusInternalServerError, error) //500
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		utils.SendSuccess(w, cardID)
 	}
 }
 
 func (c Controller) UpdateCard(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		var card models.Card
+		var error models.Error
+
 		json.NewDecoder(r.Body).Decode(&card)
-	
-		result, err := db.Exec("update cards set name=$1, color=$2, standard_legal=$3, type=$4, rarity=$5, set=$6, casting_cost=$7 where id=$8 RETURNING id", 
-			&card.Name, &card.Color, &card.StandardLegal, &card.Type, &card.Rarity, &card.Set, &card.CastingCost, &card.ID)
-	
-		rowsUpdated, err := result.RowsAffected()
-		logFatal(err)
-	
-		json.NewEncoder(w).Encode(rowsUpdated)
+
+		if card.ID == 0 {
+			error.Message = "Card ID is required to update a card."
+			utils.SendError(w, http.StatusBadRequest, error)
+			return
+		}
+
+		cardRepo := cardRepository.CardRepository{}
+		rowsUpdated, err := cardRepo.UpdateCard(db, card)
+
+		if err != nil {
+			error.Message = "Server error"
+			utils.SendError(w, http.StatusInternalServerError, error) //500
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		utils.SendSuccess(w, rowsUpdated)
 	}
 }
 
 func (c Controller) RemoveCard(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
+		var error models.Error
 		params := mux.Vars(r)
+		cardRepo := cardRepository.CardRepository{}
+		id, _ := strconv.Atoi(params["id"])
 
-		result, err := db.Exec("delete from cards where id = $1", params["id"])
-		logFatal(err)
-	
-		rowsDeleted, err := result.RowsAffected()
-		logFatal(err)
-	
-		json.NewEncoder(w).Encode(rowsDeleted)
+		rowsDeleted, err := cardRepo.RemoveCard(db, id)
+
+		if err != nil {
+			error.Message = "Server error."
+			utils.SendError(w, http.StatusInternalServerError, error) //500
+			return
+		}
+
+		if rowsDeleted == 0 {
+			error.Message = "Card Not Found"
+			utils.SendError(w, http.StatusNotFound, error) //404
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		utils.SendSuccess(w, rowsDeleted)
 	}	
 }
