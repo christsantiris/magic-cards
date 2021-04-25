@@ -20,3 +20,6 @@
 ## To build and run the project
 ### `go build && ./magic-cards`
 
+## To run the app with Docker:
+### `docker build -t magic-cards .` then `docker run -p 8000:8000 magic-cards`
+
