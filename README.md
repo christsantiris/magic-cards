@@ -10,3 +10,7 @@
 ### `go get github.com/derekparker/delve/cmd/dlv`
 ### then hit the play button in vs code
 
+## To create a go module and add dependencies:
+### `go mod init <module name> i.e github.com/christsantiris/magic-cards`
+### `go mod tidy`
+
