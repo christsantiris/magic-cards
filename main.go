@@ -7,13 +7,11 @@ import (
 
 	"github.com/christsantiris/magic-cards/controllers"
 	"github.com/christsantiris/magic-cards/driver"
-	"github.com/christsantiris/magic-cards/models"
 	"github.com/christsantiris/magic-cards/utils"
 	"github.com/gorilla/mux"
 	"github.com/subosito/gotenv"
 )
 
-var cards []models.Card
 var db *sql.DB
 
 func init() {
