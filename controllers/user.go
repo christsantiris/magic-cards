@@ -104,7 +104,7 @@ func (c Controller) Signup(db *sql.DB) http.HandlerFunc {
 		user.Password = string(hash)
 
 		userRepo := userRepository.UserRepository{}
-		user = userRepo.Signup(db, user)
+		user, err = userRepo.Signup(db, user)
 
 		if err != nil {
 			error.Message = "Server error."
