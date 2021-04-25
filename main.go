@@ -10,20 +10,10 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"github.com/subosito/gotenv"
+	"github.com/christsantiris/magic-cards/models"
 )
 
-type Card struct {
-	ID int `json:"id"`
-	Name string `json:"name"`
-	Color string `json:"color"`
-	StandardLegal bool `json:",omitempty"`
-	Type string `json:"type"`
-	Rarity string `json:"rarity"`
-	Set string `json:"set"`
-	CastingCost int `json:",omitempty"`
-}
-
-var cards []Card
+var cards []models.Card
 var db *sql.DB
 
 func init() {
@@ -60,8 +50,8 @@ func main() {
 }
 
 func getCards(w http.ResponseWriter, r *http.Request) {
-	var card Card
-	cards = []Card{}
+	var card models.Card
+	cards = []models.Card{}
 
 	rows, err := db.Query("select * from cards")
 	logFatal(err)
@@ -78,7 +68,7 @@ func getCards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 func getCard(w http.ResponseWriter, r *http.Request) {
-	var card Card
+	var card models.Card
 	params := mux.Vars(r)
 
 	row := db.QueryRow("select * from cards where id=$1", params["id"])
@@ -89,7 +79,7 @@ func getCard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(card)
 }
 func addCard(w http.ResponseWriter, r *http.Request) {
-	var card Card
+	var card models.Card
 	var cardID int
 
 	json.NewDecoder(r.Body).Decode(&card)
@@ -101,7 +91,7 @@ func addCard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cardID)
 }
 func updateCard(w http.ResponseWriter, r *http.Request) {
-	var card Card
+	var card models.Card
 	json.NewDecoder(r.Body).Decode(&card)
 
 	result, err := db.Exec("update cards set name=$1, color=$2, standard_legal=$3, type=$4, rarity=$5, set=$6, casting_cost=$7 where id=$8 RETURNING id", 
