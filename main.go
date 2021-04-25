@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/christsantiris/magic-cards/controllers"
@@ -19,12 +18,6 @@ var db *sql.DB
 
 func init() {
 	gotenv.Load()
-}
-
-func logFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func main() {
@@ -46,5 +39,5 @@ func main() {
 	router.HandleFunc("/login", controller.Login(db)).Methods("POST")
 
 	fmt.Println("The App is running on port 8000")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	utils.LogFatal(http.ListenAndServe(":8000", router))
 }

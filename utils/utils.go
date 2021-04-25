@@ -12,6 +12,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+func LogFatal(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func SendError(w http.ResponseWriter, status int, err models.Error) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(err)
