@@ -6,6 +6,9 @@
 ### `insert into cards (name, color, standard_legal, type, rarity, set, casting_cost) values ('Goldspan Dragon', 'Red', true, 'Creature', 'Mythic Rare', 'Kaldheim', 5)`
 ### `SELECT * FROM cards` 
 
+### To create users table
+### `create table users (id serial primary key, email text not null unique, password text not null);`
+
 ## To run the application in debug mode: 
 ### `go get github.com/derekparker/delve/cmd/dlv`
 ### then hit the play button in vs code

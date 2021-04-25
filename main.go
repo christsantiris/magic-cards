@@ -1,15 +1,17 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
-	"log"
-	"fmt"
 	"database/sql"
-	"github.com/subosito/gotenv"
-	"github.com/christsantiris/magic-cards/models"
-	"github.com/christsantiris/magic-cards/driver"
+	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/christsantiris/magic-cards/controllers"
+	"github.com/christsantiris/magic-cards/driver"
+	"github.com/christsantiris/magic-cards/models"
+	"github.com/christsantiris/magic-cards/utils"
+	"github.com/gorilla/mux"
+	"github.com/subosito/gotenv"
 )
 
 var cards []models.Card
@@ -32,11 +34,16 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/cards", controller.GetCards(db)).Methods("GET")
-	router.HandleFunc("/cards/{id}", controller.GetCard(db)).Methods("GET")
-	router.HandleFunc("/cards", controller.AddCard(db)).Methods("POST")
-	router.HandleFunc("/cards", controller.UpdateCard(db)).Methods("PUT")
-	router.HandleFunc("/cards/{id}", controller.RemoveCard(db)).Methods("DELETE")
+	// Card routes
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.GetCards(db))).Methods("GET")
+	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(controller.GetCard(db))).Methods("GET")
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.AddCard(db))).Methods("POST")
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.UpdateCard(db))).Methods("PUT")
+	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(controller.RemoveCard(db))).Methods("DELETE")
+
+	// User routes
+	router.HandleFunc("/signup", controller.Signup(db)).Methods("POST")
+	router.HandleFunc("/login", controller.Login(db)).Methods("POST")
 
 	fmt.Println("The App is running on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
