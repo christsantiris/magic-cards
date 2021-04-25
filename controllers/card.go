@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -16,12 +15,6 @@ import (
 type Controller struct{}
 
 var cards []models.Card
-
-func logFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +32,9 @@ func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		utils.SendSuccess(w, cards)
 	}
 }
@@ -70,6 +66,9 @@ func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		utils.SendSuccess(w, card)
 	}
 }
@@ -98,6 +97,9 @@ func (c Controller) AddCard(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		utils.SendSuccess(w, cardID)
 	}
 }
@@ -183,6 +185,9 @@ func (c Controller) UpdateCard(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		utils.SendSuccess(w, rowsUpdated)
 	}
 }
@@ -209,6 +214,9 @@ func (c Controller) RemoveCard(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		utils.SendSuccess(w, rowsDeleted)
 	}
 }
