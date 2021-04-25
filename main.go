@@ -6,11 +6,10 @@ import (
 	"log"
 	"encoding/json"
 	"fmt"
-	"os"
 	"database/sql"
-	"github.com/lib/pq"
 	"github.com/subosito/gotenv"
 	"github.com/christsantiris/magic-cards/models"
+	"github.com/christsantiris/magic-cards/driver"
 )
 
 var cards []models.Card
@@ -27,15 +26,7 @@ func logFatal(err error) {
 }
 
 func main() {
-
-	pgUrl, err := pq.ParseURL(os.Getenv("ELEPHANTSQL_URL"))
-	logFatal(err)
-
-	db, err = sql.Open("postgres", pgUrl)
-	logFatal(err)
-
-	err = db.Ping()
-	logFatal(err)
+	db = driver.ConnectDB()
 
 	router := mux.NewRouter()
 
