@@ -1,18 +1,19 @@
 package controllers
 
 import (
-	"github.com/christsantiris/magic-cards/models"
-	"github.com/christsantiris/magic-cards/repository/card"
-	"github.com/christsantiris/magic-cards/utils"
-	"net/http"
+	"database/sql"
 	"encoding/json"
 	"log"
-	"database/sql"
-	"github.com/gorilla/mux"
+	"net/http"
 	"strconv"
+
+	"github.com/christsantiris/magic-cards/models"
+	cardRepository "github.com/christsantiris/magic-cards/repository/card"
+	"github.com/christsantiris/magic-cards/utils"
+	"github.com/gorilla/mux"
 )
 
-type Controller struct {}
+type Controller struct{}
 
 var cards []models.Card
 
@@ -23,7 +24,7 @@ func logFatal(err error) {
 }
 
 func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var error models.Error
 
@@ -43,7 +44,7 @@ func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 }
 
 func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var error models.Error
 
@@ -74,7 +75,7 @@ func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
 }
 
 func (c Controller) AddCard(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var cardID int
 		var error models.Error
@@ -102,19 +103,77 @@ func (c Controller) AddCard(db *sql.DB) http.HandlerFunc {
 }
 
 func (c Controller) UpdateCard(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
+		var prevCard models.Card
 		var error models.Error
+		var parameters map[string]interface{}
 
-		json.NewDecoder(r.Body).Decode(&card)
+		json.NewDecoder(r.Body).Decode(&parameters)
 
+		// Check if params with zero values exist in request body before marshalling struct
+		var casting_cost_empty bool
+		_, ok := parameters["CastingCost"]
+		if !ok {
+			casting_cost_empty = true
+		}
+
+		var standard_legal_empty bool
+		_, ok = parameters["StandardLegal"]
+		if !ok {
+			standard_legal_empty = true
+		}
+
+		// Marshal struct from map
+		jsonString, _ := json.Marshal(parameters)
+		json.Unmarshal(jsonString, &card)
+
+		cardRepo := cardRepository.CardRepository{}
+
+		// Get previous card values
+		prevCard, err := cardRepo.GetCard(db, prevCard, card.ID)
+		if err != nil {
+			error.Message = "Card not found."
+			utils.SendError(w, http.StatusBadRequest, error)
+			return
+		}
+
+		// Card.ID is required.
+		// If other fields not provided to update, use existing values
 		if card.ID == 0 {
 			error.Message = "Card ID is required to update a card."
 			utils.SendError(w, http.StatusBadRequest, error)
 			return
 		}
 
-		cardRepo := cardRepository.CardRepository{}
+		if card.Name == "" {
+			card.Name = prevCard.Name
+		}
+
+		if card.Color == "" {
+			card.Color = prevCard.Color
+		}
+
+		if card.Type == "" {
+			card.Type = prevCard.Type
+		}
+
+		if card.Rarity == "" {
+			card.Rarity = prevCard.Rarity
+		}
+
+		if card.Set == "" {
+			card.Set = prevCard.Set
+		}
+
+		if casting_cost_empty {
+			card.CastingCost = prevCard.CastingCost
+		}
+
+		if standard_legal_empty {
+			card.StandardLegal = prevCard.StandardLegal
+		}
+
 		rowsUpdated, err := cardRepo.UpdateCard(db, card)
 
 		if err != nil {
@@ -129,7 +188,7 @@ func (c Controller) UpdateCard(db *sql.DB) http.HandlerFunc {
 }
 
 func (c Controller) RemoveCard(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var error models.Error
 		params := mux.Vars(r)
 		cardRepo := cardRepository.CardRepository{}
@@ -151,5 +210,5 @@ func (c Controller) RemoveCard(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "text/plain")
 		utils.SendSuccess(w, rowsDeleted)
-	}	
+	}
 }
