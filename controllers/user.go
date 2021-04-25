@@ -11,6 +11,7 @@ import (
 	"github.com/christsantiris/magic-cards/models"
 	userRepository "github.com/christsantiris/magic-cards/repository/user"
 
+	"github.com/badoux/checkmail"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -87,6 +88,14 @@ func (c Controller) Signup(db *sql.DB) http.HandlerFunc {
 			error.Message = "Email is missing."
 			utils.SendError(w, http.StatusBadRequest, error)
 			return
+		}
+
+		if user.Email != "" {
+			if err := checkmail.ValidateFormat(user.Email); err != nil {
+				error.Message = "Email is invalid."
+				utils.SendError(w, http.StatusInternalServerError, error)
+				return
+			}
 		}
 
 		if user.Password == "" {
