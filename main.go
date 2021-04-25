@@ -35,11 +35,11 @@ func main() {
 	router := mux.NewRouter()
 
 	// Card routes
-	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.GetCards(db))).Methods("GET")
-	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(controller.GetCard(db))).Methods("GET")
-	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.AddCard(db))).Methods("POST")
-	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(controller.UpdateCard(db))).Methods("PUT")
-	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(controller.RemoveCard(db))).Methods("DELETE")
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(utils.Logging(controller.GetCards(db)))).Methods("GET")
+	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(utils.Logging(controller.GetCard(db)))).Methods("GET")
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(utils.Logging(controller.AddCard(db)))).Methods("POST")
+	router.HandleFunc("/cards", utils.TokenVerifyMiddleWare(utils.Logging(controller.UpdateCard(db)))).Methods("PUT")
+	router.HandleFunc("/cards/{id}", utils.TokenVerifyMiddleWare(utils.Logging(controller.RemoveCard(db)))).Methods("DELETE")
 
 	// User routes
 	router.HandleFunc("/signup", controller.Signup(db)).Methods("POST")

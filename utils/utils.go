@@ -20,6 +20,13 @@ func SendSuccess(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
+func Logging(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method + " " + r.Host + r.URL.Path)
+		f(w, r)
+	}
+}
+
 // Generate JWT
 func GenerateToken(user models.User) (string, error) {
 	var err error
