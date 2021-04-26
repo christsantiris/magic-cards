@@ -20,6 +20,7 @@ func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var error models.Error
+		var response models.CardsResponse
 
 		cards = []models.Card{}
 		cardRepo := cardRepository.CardRepository{}
@@ -31,11 +32,15 @@ func (c Controller) GetCards(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		response.Cards = cards
+		response.Message = "Ok"
+		response.StatusCode = http.StatusOK
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
-		utils.SendSuccess(w, cards)
+		utils.SendSuccess(w, response)
 	}
 }
 
@@ -43,6 +48,7 @@ func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var card models.Card
 		var error models.Error
+		var response models.CardResponse
 
 		params := mux.Vars(r)
 
@@ -65,11 +71,15 @@ func (c Controller) GetCard(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
+		response.Card = card
+		response.Message = "Ok"
+		response.StatusCode = http.StatusOK
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
-		utils.SendSuccess(w, card)
+		utils.SendSuccess(w, response)
 	}
 }
 
