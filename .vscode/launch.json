@@ -11,6 +11,7 @@
             "port": 8000,
             "host": "127.0.0.1",
             "program": "${workspaceRoot}",
+            "debugAdapter": "legacy",
             "env": {},
             "args": [],
             "showLog": true
